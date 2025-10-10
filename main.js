@@ -1,8 +1,57 @@
-var x = 0;
-var y = 0;
-var amplitude = 40;
+const input = document.getElementById('input')
+var timepernote = 0;
+var length = 0;
+var reset = false;
 var interval = null;
-const input = document.getElementById('input');
+var amplitude = 40;
+
+var blob, recorder =null;
+var chunks =[];
+
+function startRecording(){
+  const canvasStrem = canvas.captureStream(20);//frame rate canvas
+  const audioDestination = audioCtx.createMediaStreamDestination();
+  gainNode.connect(audioDestination);
+  const combinedStream=new MediaStream;
+  CanvasCaptureMediaStreamTrack.getVidieoTracks().forEach(track =>combinedStream.addTrack(track));
+  audioDestination.stream.getAudioTracks().forEach(track=> combinedStream.addTrack(track));
+  recorder = new MediaRecorder(combinedStream, { mimeType:'video/webm'});
+  recorder.ondataavailable = e => {
+ if (e.data.size > 0) {
+   chunks.push(e.data);
+ }
+};
+recorder.onstop = () => {
+   const blob = new Blob(chunks, { type: 'video/webm' });
+   const url = URL.createObjectURL(blob);
+   const a = document.createElement('a');
+   a.href = url;
+   a.download = 'recording.webm';
+   a.click();
+   URL.revokeObjectURL(url);
+};
+recorder.start();
+
+var is_recording = false;
+function toggle(){
+  is_recording =!is_recording;
+  if(is_recording){
+    recording_toggle.innerHTML ="Stop Recording";
+    startRecording();
+  }else{
+    recording_toggle.innerHTML ="Start Recording";
+    recorder.stop();
+  }
+
+}
+}
+const recording_toggle=
+document.getElementById('record')
+
+const color_picker=
+document.getElementById('color')
+
+
 // create web audio api elements
 const audioCtx = new AudioContext();
 const gainNode = audioCtx.createGain();
@@ -12,85 +61,94 @@ const gainNode = audioCtx.createGain();
 const oscillator = audioCtx.createOscillator();
 oscillator.connect(gainNode);
 gainNode.connect(audioCtx.destination);
-oscillator.type = "sine";
-
-notenames = new Map();
-notenames.set("D", 567);
-notenames.set("A", 690);
-notenames.set("E", 890);
-notenames.set('F', 672);
-notenames.set('C', 367);
-notenames.set('B', 324);
-notenames.set('G', 735);
-
-
-function frequency(pitch) {
-  const oscillator = audioCtx.createOscillator();
-  oscillator.type
-    gainNode.gain.setValueAtTime(100, audioCtx.currentTime);
-    oscillator.frequency.setValueAtTime(pitch,
-        audioCtx.currentTime);
-        gainNode.gain.setValueAtTime(0, audioCtx.currentTime +
-            1);
-   oscillator.start();
-   gainNode.gain.value = 0;     
-}
-audioCtx.resume();
+oscillator.type ="sine";
+oscillator.start();
 gainNode.gain.value = 0;
 
-function handle() {
-   var usernotes =String(input.value);
-   var noteslist=[];
+notenames = new Map();
+notenames.set("C", 261.6);
+notenames.set("D", 293.7);
+notenames.set("E", 329.6);
+notenames.set("F", 349.2);
+notenames.set("G", 392.0);
+notenames.set("A", 440);
+notenames.set("B", 493.9);
 
 
-   for(i = 0; i< usernotes.length; i++){
-    
-    noteslist.push(notenames.get(usernotes.charAt(i)));
-   }
-   let j = 0;
-   repeat = setInterval(() =>{
-    if( j < noteslist.length) {
-      frequency(parseInt(noteslist[j]));
-      drawWave();
+function frequency(pitch){
+  freq = pitch/10000;
 
-      j++
-    } else{
-      clearInterval(repeat)
-    }
+  gainNode.gain.setValueAtTime(vol_slider, audioCtx.currentTime);
+  setting = setInterval (() => {gainNode.gain.value = vol_slider.slider.value}, 1);
+  oscillator.frequency.setValueAtTime(pitch, audioCtx.currentTime);
+  setTimeout(() => {clearInterval(setting); gainNode.gain.value= 0;}, ((timepernote)-10)),
+  setTimeout(() => gainNode.gain.setValueAtTime(0, audioCtx.currentTime + (timepernote/1000 - 0.1)));
+
+
+}
+
+function handle(){
+  reset = true
+  audioCtx.resume();
+  gainNode.gain.value = 0;
+  var usernotes = String(input.value);
+  length = usernotes.length;
+  timepernote = (6000 / length);
+  var noteslist = [];
   
-  }, 1000)
-   var pitch = notenames.get(usernotes);
-   freq = pitch/ 10000;
-   frequency(pitch);
+  for (i =0; i < usernotes.length; i++){
+     noteslist.push(notenames.get(usernotes.charAt(i)));
+  }
+  let j=0;
+  repeat = setInterval(() => {
+  if (j < noteslist.length){
+    frequency(parseInt(noteslist[j]));
+    drawWave();
+  j++
+  } else{
+    clearInterval(repeat)
+  }
 
-}
 
-//define canvas variables
-var canvas = document.getElementById("canvas");
-var ctx = canvas.getContext('2d');
+      }, timepernote)
+    
+  }
+ 
+  //define canvas variables
+  var canvas = document.getElementById("canvas");
+  var ctx = canvas.getContext("2d"); 
+  var counter = 0;
 
-var width =ctx.canvas.width;
-var height = ctx.canvas.height;
+  var width = ctx.canvas.width;
+  var height = ctx.canvas.height;
+ 
+  function drawWave() {
+    clearInterval(interval);
 
-freq = pitch/ 10000;
-var counter = 0;
+     counter = 0;
+     interval = setInterval(line, 20);
+     if(reset){
+     ctx.clearRect(0, 0, width, height);
+     x = 0
+     y = height/2;
+     ctx.moveTo(x, y);
+     ctx.beginPath();
+    }
+    reset = false;
+  }
 
-function drawWave(){
-  ctx.clearRect(0, 0, width, height);
-  x = 0;
-  y = height/2
-  ctx.moveTo(x, y);
-  ctx.beginPath();
-  counter = 0
-  interval= setInterval(line, 20);
 
-}
-function line(){
-  y = height/2 + (amplitude *Math.sin(x*2* Math.PI *freq));
-  ctx.lineTo(x, y);
+ function line(){
+  
+  y = height/2 + (vol_slider.value/100)*40 *Math.sin(x * 2 * Math.PI*freq* (0.5* length));
+  ctx.lineTo(x,y);
   ctx.stroke();
   x = x + 1;
-  if(counter >50){
+  
+  //increase counter by 1 to show how long interval has been run
+  counter++;
+
+    if(counter > timepernote/20) {
     clearInterval(interval);
   }
-}
+ }
