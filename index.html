@@ -1,4 +1,6 @@
-<html lang="en">
+<!DOCTYPE html>
+<html>
+  <html lang="en">
 <head>
   <title>Musical Worm</title>
 <link rel="stylesheet" href="style.css">
@@ -8,9 +10,15 @@
   <p>Basicly a sine</p>
   <div id="container">
     <canvas id="canvas"></canvas> 
-  <input type="text" id="input">
+  <input type="text" id="input" placeholder="">
   <button id="submit" onclick="handle()">submit me why dontcha</button>
-  <button id="record" onclick="toggle()">Start recording</button>
-  <input type="range" min="1" max="100" value="100"
-   <script src="main.js"></script>
+  <input type="color" id="color" value="#ff00e4">
+  <input type="color" id="color" value="#00ff30">
+  <input type="color" id="color" value="#00f6ff">
+  <input type="range" min="1" max="100" value="100" id="vol-slider">
+  <button id="record" onclick="Toggle()">Start recording</button>
+  </div>
+   
+  <script src="main.js"></script>
 </body>
+</html>

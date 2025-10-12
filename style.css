@@ -1,9 +1,8 @@
 #canvas{
-    border: 5px solid black;
+    border: 10px  white;
     height: 500px;
     width: 900px;
-    background-image: linear-gradient(to bottom, purple, pink);
-    background-image: url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGvNk_f3tfIlsxvPKrkL2c1xmwaUX7eRej-A&s);
+    background-color: black;
     background-size: 85%;
     margin-bottom: 2em;
     justify-content: center;
@@ -19,7 +18,7 @@
     gap: 10px;
 }
 body{
-    background-color: #b1a8d1;
+    background-image: linear-gradient(to bottom, purple, pink);
     text-align: center;
 }
 h1{
