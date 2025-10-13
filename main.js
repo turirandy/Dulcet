@@ -2,19 +2,24 @@ const input = document.getElementById('input');
 const colorPicker = document.getElementById('color');
 const recordingToggle = document.getElementById('record');
 const vol_slider = document.getElementById('vol-slider');
+
 var timepernote = 0;
 var length = 0;
+var x = 0;
+var freq = 0;
+
+var blob, recorder = null;
+var chunks = [];
 
 //define canvas variables
   var canvas = document.getElementById("canvas");
   var ctx = canvas.getContext("2d"); 
-  var blob = null;
-  var chunks = [];
   var width = ctx.canvas.width;
   var height = ctx.canvas.height;
+ 
   var is_recording = false;
   
-  var freq;
+  var freq = 0;
   var x = 0;
   var y = height / 2;
   var counter = 0;
@@ -23,8 +28,17 @@ var length = 0;
 
   // create web audio api elements
 const audioCtx = new AudioContext();
+const gainNode = audioCtx.createGain();
 
-const notenames = new Map
+// create Oscillator node
+  const oscillator = audioCtx.createOscillator();
+
+
+oscillator.start();
+gainNode.gain.value = 0;
+
+notenames = new Map
+
 notenames.set("C", 261.6);
 notenames.set("D", 293.7);
 notenames.set("E", 329.6);
@@ -33,11 +47,12 @@ notenames.set("G", 392.0);
 notenames.set("A", 440);
 notenames.set("B", 493.9);
 
-
+var counter = 0
   function drawWave() {
-    
+    console.log('Drawing line')
     clearInterval(interval);
      counter = 0;
+    
      if (reset) {
      ctx.clearRect(0, 0, width, height);
      x = 0;
@@ -51,19 +66,19 @@ notenames.set("B", 493.9);
 
 
  function line() {
-  const waveColor = color_picker.value;
-  ctx.srokeStyle = waveColor;
-  ctx.shadowColor = waveColor
-  ctx.shadowBlur = 20;
-  ctx.lineWidth = 2;
-  ctx.begin();
-  ctx.moveTo(x, y);  
-  y = height / 2 + ((vol_slider.value/100)*40) * Math.sin(x * 2 * Math.PI * freq * (0.5 * length));
+  let y = height/2;
+  
+
+  ctx.beginPath();
+  ctx.moveTo(x, y); 
+  const amplitude = (vol_slider.value / 100)* 40; 
+  const wavelength = 100000 / freq ;
+  y= height / 2 + amplitude *Math.sin((2* Math.PI*x)/wavelength)
   ctx.lineTo(x, y);
   ctx.stroke();
   x = x + 1;
   counter++;
-  ctx.srokeStyle = color_picker.value;
+  ctx.strokeStyle = color_picker.value;
 
 
     if (counter > timepernote / 20) {
@@ -72,12 +87,13 @@ notenames.set("B", 493.9);
  }
 
 
+
 function startRecording(){
-  const canvasStrem = canvas.captureStream(20);//frame rate canvas
+  const canvasStream = canvas.captureStream(20);//frame rate canvas
   const audioDestination = audioCtx.createMediaStreamDestination();
   gainNode.connect(audioDestination);
   const combinedStream = new MediaStream();
-  CanvasCaptureMediaStreamTrack.getVidieoTracks().forEach(track => combinedStream.addTrack(track));
+  canvasStream.getVideoTracks().forEach(track => combinedStream.addTrack(track));
   audioDestination.stream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
   
   recorder = new MediaRecorder(combinedStream, { mimeType: "video/webm" });
@@ -109,18 +125,13 @@ function Toggle(){
     recorder.stop();
   }
 }
-const recording_toggle = document.getElementById("click , toggle");
+const recording_toggle = document.getElementById("record");
 
 const color_picker = document.getElementById("color");
 
-// create Oscillator node
-oscillator.start();
-gainNode.gain.value = 0;
-
 
 function frequency(pitch) {
-
-  const oscillator = audioCtx.createOscillator();
+  freq = pitch / 10000;
   const gainNode = audioCtx.createGain();
   
   oscillator.type = "sine";
@@ -138,7 +149,7 @@ function frequency(pitch) {
 
 oscillator.start();
 oscillator.stop(audioCtx.currentTime + 1); 
-  freq = pitch / 10000;
+
 }
 
 function handle() {
@@ -147,14 +158,15 @@ function handle() {
 
   gainNode.gain.value = 0;
   var usernotes = String(input.value);
+  length = usernotes.length;
+  timepernote = (6000 / length);
+
   var noteslist = [];
   
   for (i =0; i < usernotes.length; i++) {
      noteslist.push(notenames.get(usernotes.charAt(i)));
   }
-   length = usernotes.length;
-   timepernote = (6000 / length);
-
+  
   let j = 0;
   repeat = setInterval(() => {
   if (j < noteslist.length) {
