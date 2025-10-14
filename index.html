@@ -10,13 +10,12 @@
   <p>Basicly a sine</p>
   <div id="container">
     <canvas id="canvas"></canvas> 
-  <input type="text" id="input" placeholder="">
-  <button id="submit" onclick="handle()">submit me why dontcha</button>
-  <input type="color" id="color" value="#ff00e4">
-  <input type="color" id="color" value="#00ff30">
-  <input type="color" id="color" value="#00f6ff">
+  <div class="gear">
+  <input type="text" id="input" placeholder="Type your name in small letters to hear it!!">
+  <button id="submit" onclick="handle()">Submit me why dontcha</button>
+  <input type="color" id="color1" value="#ff00e4">
   <input type="range" min="1" max="100" value="100" id="vol-slider">
-  <button id="record" onclick="Toggle()">Start recording</button>
+  <button id="record" onclick="toggle()">Start recording</button>
   </div>
    
   <script src="main.js"></script>

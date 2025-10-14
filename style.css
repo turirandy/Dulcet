@@ -2,16 +2,16 @@
     border: 10px  white;
     height: 500px;
     width: 900px;
-    background-color: whitesmoke;
+    background-color: black;
     background-size: 85%;
     margin-bottom: 2em;
     justify-content: center;
     text-align: center;
+    display: flex;
 }
 #container{
     text-align: center;
     display: flex;
-    width: 20%;
     height: 100vh;
     justify-content: center;
     flex-direction: column;
@@ -24,4 +24,18 @@ body{
 h1{
     font-family: cursive;
 }
+.gear{
+    display: flex;
+    text-align: center;
+    gap: 15px;
+}
+#input{
+    width: 400px;
+}
+button {
+  background-color: #ff0094;
+  color: white;
+  cursor: pointer;
+}
+
     
